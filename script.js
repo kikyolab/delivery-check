@@ -259,7 +259,7 @@ const html5QrCode = new Html5Qrcode("reader");
 
 function startCamera(){
 
-alert( window.top==window.self);
+	//alert( window.top==window.self);
     //  const html5QrCode = new Html5Qrcode("reader");
     //    ↑ここだとこのファンクションの外で使えないので外に移動
 
