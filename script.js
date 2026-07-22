@@ -269,22 +269,48 @@ function startCamera(){
         { facingMode: "environment" },
 
         {
-		fps: 5,
+		fps: 10,
 		//qrbox: 250
 		qrbox: { width: 350, height: 150 }
         },
 
         function(decodedText){
+		if (decodedText === lastBarcode) {
+		
+		    hitCount++;
+		
+		} else {
+		
+		    lastBarcode = decodedText;
+		    hitCount = 1;
 
-            // まず止める
-            //html5QrCode.stop();
+		}
 
-            // バーコードをセットする
-            //document.getElementById("HTMLbarcodeInputField").value = decodedText;
+		if (hitCount >= 3) {
 
-            //checkBarcode();
+			// まず止める
+			//html5QrCode.stop();←これだけでも問題ないが、止めてから処理したいから↓にする
+			
+			html5QrCode.stop().then(() => {
+				
+				// バーコードをセットする
+				document.getElementById("HTMLbarcodeInputField").value = decodedText;
+				
+				//万が一の再利用の為にチェック用バーコード変数をクリアする
+				lastBarcode = "";
+				hitCount = 0;
+				
+				checkBarcode();
+			})
+			.catch(err => {
+				console.error(err);
+			});
+
+		}
+
+
             
-            console.log(decodedText);
+            //console.log(decodedText);
 
         }
 
