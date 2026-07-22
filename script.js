@@ -1,0 +1,306 @@
+
+//////////////////////////////////////////////////////
+// 検索用Map　の宣言（納品書のデータを入れるMap)
+//////////////////////////////////////////////////////
+
+const invoiceMap = new Map();
+  // ここで指定しないと、全ての関数で共有できない
+
+
+//////////////////////////////////////////////////////
+// ページを開いたら納品書を取得
+//////////////////////////////////////////////////////
+
+window.onload=function(){
+
+
+	//	google.script.run
+	//	.withSuccessHandler(loadMap)
+	//	.loadInvoice();
+	//		この3行の説明が↓だが、これはgas（google apps script)（スプレッドシートなど）での使い方なので通常のjavascriptでは使えない
+    //  HTMLからGASにある関数を実行する為の仕組み
+    //    サーバ側への依頼のようなもの（GASはサーバ側の処理だからデータの読み書きには必須になる）
+    //  この場合は、GASのloadInvoice()を実行して、結果をloadMap関数に送る。という命令
+    //    google.script.runはサーバでの処理（スプレッドシートの中身の読み書きが必要なら必須）
+    //    そのデータをHTML側で使用する必要があるなら.withSuccessHandler(関数)になる
+    //        変数や定数としては使えない。あくまでも関数で()を入れてはいけない
+    //          入れるとその場で実行するのでデータが来る前に実行される可能性がある
+    //        - HTMLで使わない（シートに何かを書き込んで終わる場合など）なら.withSuccessHandler()が不要になる -
+    //            checkItem()で使用しているからそちらを参照
+    //        .withSuccessHandler()を使うなら、GASの中にある関数を指定する必要があるので3行目も必須になる
+    //            この場合のGAS側の関数は return が必須になる
+    //              戻り値がないなら上述の通りで.withSuccessHandler()が不要な処理ということになる
+    //    注意点として、戻り値は1つのオブジェクトに限定される
+    //      今回の場合でもbarcodeとnameをバラバラに戻すことはできない
+    //        配列として return[a,b,c] にしたり、return｛ barcode:1111,name:コーラ }のように1つにする必要がある
+    //          この戻り値は、HTMLで指定された関数の（）の中に入るので、ここで指定する必要はない
+    //              今回は loadMap(values)とされているので、valuesに入って処理が行われる
+    //          javascript ではよく使われている考え方なのでこれだけではない
+
+
+}
+
+
+//////////////////////////////////////////////////////
+// GASから受け取ったデータをMapへ
+//  現在は、HTML用納品リストの作成functionも入っている
+//    完成後にgoogle.script.runの修正も含めて名前を変えたほうが良い
+//      function initializeInvoice()
+//        ├─function createInvoiceMap()　←これにvalues.forEach()を入れる
+//        └ function createInvoiceList()がよいかと
+//////////////////////////////////////////////////////
+
+function loadMap(values){
+
+    //  console.log(values);
+
+    values.forEach(row=>{
+
+        invoiceMap.set(
+
+            row.barcode,
+
+            row
+
+        );
+
+
+    });
+
+
+    createInvoiceList(values);
+
+    //alert(invoiceMap.get("1111"));
+    // console.log(JSON.stringify(Object.fromEntries(invoiceMap),null,2));
+      // Object.fromEntries(マップの名前)　←この部分でMapオブジェクトを連想配列（javascriptオブジェクト）に変換する
+      //      JSON.stringifyはMapをそのまま渡しても空白にするので連想配列に変形させる必要がある
+      // JSON.stringify(変改したいオブジェクト(データ), 特定のデータだけを抜く時に指定(今回は全部なのでnull), インデント数(左側に空白何個かを空けてレコード単位で読みやすくする))
+
+    // values.forEach(row =>{処理});　は配列専用のfor文
+    //    valuesはここに来た時に受け取ったMapデータ（gasで作ったヤツ）
+
+  //console.log(Array.from(invoiceMap));
+}
+
+
+////////////////////////////////////////////////////////
+//  納品テーブルにリストを入れる処理
+////////////////////////////////////////////////////////
+
+function createInvoiceList(values){
+
+    const tbody = document.getElementById("invoiceTableBody");
+    tbody.innerHTML = "";
+
+    values.forEach(item => {
+
+        const tr = document.createElement("tr");
+        tr.id = "invoiceTableRow-" + item.barcode;
+
+
+        const tdCheck = document.createElement("td");
+        tdCheck.id = "invoiceTableCheck-" + item.barcode;
+        tdCheck.textContent ="□";
+
+        const tdName = document.createElement("td");
+        tdName.textContent = item.name;
+
+        const tdQty = document.createElement("td");
+        tdQty.textContent = item.qty;
+
+        tr.appendChild(tdCheck);
+        tr.appendChild(tdName);
+        tr.appendChild(tdQty);
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+//////////////////////////////////////////////////////
+// Enterキーでバーコード処理
+//////////////////////////////////////////////////////
+
+document
+.getElementById("HTMLbarcodeInputField")
+.addEventListener(
+
+"keydown",
+
+function(e){
+
+    if(e.key==="Enter"){
+
+        checkBarcode();
+
+    }
+
+});
+
+
+//////////////////////////////////////////////////////
+// 履歴へ追加
+//////////////////////////////////////////////////////
+
+function addHistory(barcode, item){
+
+    const tbody = document.getElementById("historyBody");
+
+    const tr = document.createElement("tr");
+
+    const tdTime = document.createElement("td");
+    tdTime.textContent = new Date().toLocaleTimeString();
+
+    const tdBarcode = document.createElement("td");
+    tdBarcode.textContent = barcode;
+
+
+    const tdName = document.createElement("td");
+    if(item){
+
+      tdName.textContent = item.name;
+
+    }else{
+
+      tdName.textContent = "? 商品が見つかりません";
+
+    }
+
+    tr.appendChild(tdTime);
+    tr.appendChild(tdBarcode);
+    tr.appendChild(tdName);
+
+    tbody.prepend(tr);
+
+}
+
+
+//////////////////////////////////////////////////////
+// バーコード検索
+//////////////////////////////////////////////////////
+
+function checkBarcode(){
+
+  //console.log(barcode);
+
+    const barcode=document.getElementById("HTMLbarcodeInputField").value;
+    
+      //  console.log(barcode);
+      //  console.log(typeof barcode);
+
+    const item=invoiceMap.get(barcode);
+
+    
+
+    if(item){
+      //    itemがtrueとみなされる値（thuthy）なら。という意味
+      //        undefinedやnullはelseになる
+      //        数値があったらというわけではない（0や空白だけでもelseになる）
+      //      今回はデータがヒットしたら値が入るのでこれだけで良い
+
+      const tbody = document.getElementById("historyBody");
+
+        //google.script.run
+          //.checkItem(item.sheetRow);
+           //  冒頭の長文説明のヤツ
+            //      スプレットシートに??を追加するだけでHTMLでは何もしないので .withSuccessHandler()が無い書き方
+	    //	ここもgas用なのでコメントアウト
+
+        //    ↓でHTML用納品書リストの□を??に変える
+        document.getElementById("invoiceTableCheck-" + barcode).textContent = "?";
+
+        document.getElementById("result").innerHTML=
+
+            "<span class='ok'>〇 "+item.name+"</span>"; //　入力された番号が納品書A1の中にあれば◯と商品名が表示される
+
+     
+    }
+
+    else{
+
+        document.getElementById("result").innerHTML=
+
+            "<span class='ng'>× 見つかりません</span>";
+
+    }
+
+    document.getElementById("HTMLbarcodeInputField").value="";
+
+    document.getElementById("HTMLbarcodeInputField").focus();
+
+    //  console.log(typeof Array.from(invoiceMap)[0][0]);
+
+        //    ↓バーコードを読み込む度に履歴を記録していく
+        addHistory(barcode, item);
+
+
+}
+
+
+///////////////////////////////////////////////////////
+//QRコードの作成と表示
+///////////////////////////////////////////////////////
+
+console.log(window.location.href);
+
+new QRCode(document.getElementById("QRcode"), {
+
+  //  text: window.location.href,　←これだと変な所に飛ばされる
+  //	text: "https://script.google.com/macros/s/AKfycbzai84WZTv13V9aztLNcCkgYdTFui-4QeOtIiiDl3jd_8vUbRjf5hAEshVUrTZhQVu79Q/exec",
+  //		↑ここもgas用のコーディング（GASのURL）
+  text: "https://kikyolb.github.io/delivery-check/",
+  width: 250,
+  height: 250
+
+});
+
+
+//////////////////////////////////////////////////////
+// カメラ起動
+//////////////////////////////////////////////////////
+
+document
+.getElementById("startCamera")
+.addEventListener("click", startCamera);
+
+
+// functionの中にいるならこれで良いが、"reader"がないのでは？
+// let html5QrCode; ←これがエラー
+
+const html5QrCode = new Html5Qrcode("reader");
+
+function startCamera(){
+
+alert( window.top==window.self);
+    //  const html5QrCode = new Html5Qrcode("reader");
+    //    ↑ここだとこのファンクションの外で使えないので外に移動
+
+
+    html5QrCode.start(
+
+        { facingMode: "environment" },
+
+        {
+            fps: 10,
+            qrbox: 250
+        },
+
+        function(decodedText){
+
+            // まず止める
+            html5QrCode.stop();
+
+            // バーコードをセットする
+            document.getElementById("HTMLbarcodeInputField").value = decodedText;
+
+            checkBarcode();
+
+        }
+
+    );
+
+}
+
+

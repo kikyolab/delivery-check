@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+
+<h2>入荷チェック</h2>
+
+<input
+      id="HTMLbarcodeInputField"
+      type="text"
+      placeholder="バーコードを読み込んでください"
+      autofocus>
+
+<div id="result">
+
+<span class="result">待機中</span>
+
+<span id="QRcode" class="result right-aligned"></span>
+
+</div>
+
+
+<div id="CameraButton" width="100%" class="cameraButtonArea">
+  <button id="startCamera" class="CameraButton">
+    ??? カメラ始動???
+  </button>
+</div>
+
+<div id="reader"></div>
+
+
+<div id="invoiceArea">
+<h3>納品一覧</h3>
+
+<table id="invoiceTable">
+  
+  <thead>
+  
+    <tr>
+  
+      <th>済</th>
+      <th>商品名</th>
+      <th>数量</th>
+  
+    </tr>
+  
+  </thead>
+
+  <tbody id="invoiceTableBody">
+
+    <tr>
+
+      <td colspan="3">
+        読み込み中…
+      </td>
+
+    </tr>
+
+  </tbody>
+
+</table>
+</div>
+
+
+<div id="historyTable">
+<h3>読み込み履歴</h3>
+
+<table>
+
+  <thead>
+
+    <tr>
+
+      <th>時刻</th>
+      <th>バーコード</th>
+      <th>商品名</th>
+
+    </tr>
+
+  </thead>
+
+  <tbody id="historyBody">
+
+  </tbody>
+
+</table>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+
+
+</html>
+

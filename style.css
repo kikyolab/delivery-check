@@ -1,0 +1,93 @@
+     body{
+      font-family:Meiryo,sans-serif;
+      margin:20px;
+      background:#f4f4f4;
+    }
+
+    h2{
+      margin-top:0;
+      color: red;
+    }
+
+    input{
+
+      width:100%;
+      font-size:22px;
+      padding:10px;
+      box-sizing:border-box;
+
+    }
+
+    .cameraButtonArea{
+      width: 100%;
+      padding: 10px;
+      display: flex;
+      justify-content: center; /* 左右中央 */
+      align-items: center;     /* 上下中央 */      
+    }
+
+    .CameraButton {
+      padding: 100px 200px; /* 上下に100px、左右に200pxの余白 */
+          /*結果的にボタンが大きくなる*/
+      font-size: 3rem;
+    }
+
+    #result{
+
+      margin-top:20px;
+      padding:15px;
+      background:white;
+      border-radius:5px;
+      font-size:20px;
+
+      display: flex;
+
+    }
+
+    .result{
+      width: 50%;
+    }
+
+    .right-aligned{
+      display: inline-block;
+      text-align: right;
+    }
+
+    #historyTable{
+
+      margin-top:20px;
+      background:white;
+      padding:10px;
+      border-radius:5px;
+      max-height:300px;
+      overflow:auto;
+
+    }
+
+    table{
+
+      width:100%;
+      border-collapse:collapse;
+
+    }
+
+    td,th{
+
+      border:1px solid #ccc;
+      padding:6px;
+
+    }
+
+    .ok{
+
+      color:green;
+      font-weight:bold;
+
+    }
+
+    .ng{
+
+      color:red;
+      font-weight:bold;
+
+    }
