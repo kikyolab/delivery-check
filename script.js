@@ -14,41 +14,13 @@ const invoiceMap = new Map();
 window.onload=function(){
 
 
-	//	google.script.run
-	//	.withSuccessHandler(loadMap)
-	//	.loadInvoice();
-	//		この3行の説明が↓だが、これはgas（google apps script)（スプレッドシートなど）での使い方なので通常のjavascriptでは使えない
-    //  HTMLからGASにある関数を実行する為の仕組み
-    //    サーバ側への依頼のようなもの（GASはサーバ側の処理だからデータの読み書きには必須になる）
-    //  この場合は、GASのloadInvoice()を実行して、結果をloadMap関数に送る。という命令
-    //    google.script.runはサーバでの処理（スプレッドシートの中身の読み書きが必要なら必須）
-    //    そのデータをHTML側で使用する必要があるなら.withSuccessHandler(関数)になる
-    //        変数や定数としては使えない。あくまでも関数で()を入れてはいけない
-    //          入れるとその場で実行するのでデータが来る前に実行される可能性がある
-    //        - HTMLで使わない（シートに何かを書き込んで終わる場合など）なら.withSuccessHandler()が不要になる -
-    //            checkItem()で使用しているからそちらを参照
-    //        .withSuccessHandler()を使うなら、GASの中にある関数を指定する必要があるので3行目も必須になる
-    //            この場合のGAS側の関数は return が必須になる
-    //              戻り値がないなら上述の通りで.withSuccessHandler()が不要な処理ということになる
-    //    注意点として、戻り値は1つのオブジェクトに限定される
-    //      今回の場合でもbarcodeとnameをバラバラに戻すことはできない
-    //        配列として return[a,b,c] にしたり、return｛ barcode:1111,name:コーラ }のように1つにする必要がある
-    //          この戻り値は、HTMLで指定された関数の（）の中に入るので、ここで指定する必要はない
-    //              今回は loadMap(values)とされているので、valuesに入って処理が行われる
-    //          javascript ではよく使われている考え方なのでこれだけではない
-
+	fetch("https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec")
+	.then(r => r.json())
+	.then(loadMap);
 
 }
 
 
-//////////////////////////////////////////////////////
-// GASから受け取ったデータをMapへ
-//  現在は、HTML用納品リストの作成functionも入っている
-//    完成後にgoogle.script.runの修正も含めて名前を変えたほうが良い
-//      function initializeInvoice()
-//        ├─function createInvoiceMap()　←これにvalues.forEach()を入れる
-//        └ function createInvoiceList()がよいかと
-//////////////////////////////////////////////////////
 
 function loadMap(values){
 
