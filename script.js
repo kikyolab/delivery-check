@@ -14,9 +14,23 @@ const invoiceMap = new Map();
 window.onload=function(){
 
 
+	//	fetch("https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec")
+	//	.then(r => r.json())
+	//	.then(loadMap);
+
 	fetch("https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec")
-	.then(r => r.json())
-	.then(loadMap);
+	.then(r => {
+		console.log("Response:", r);
+		return r.json();
+	})
+	.then(data => {
+		console.log("Data:", data);
+		loadMap(data);
+	})
+	.catch(err => {
+		console.error("Fetch Error:", err);
+	});
+
 
 }
 
