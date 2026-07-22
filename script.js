@@ -286,7 +286,10 @@ function startCamera(){
 
 		}
 
-		if (hitCount >= 2) {
+document.getElementById("result").innerHTML =
+    decodedText + "　回数：" + hitCount;
+
+		if (hitCount >= 3) {
 
 			// まず止める
 			//html5QrCode.stop();←これだけでも問題ないが、止めてから処理したいから↓にする
