@@ -269,7 +269,7 @@ function startCamera(){
         { facingMode: "environment" },
 
         {
-		fps: 10,
+		fps: 8,
 		//qrbox: 250
 		qrbox: { width: 350, height: 150 }
         },
@@ -286,7 +286,7 @@ function startCamera(){
 
 		}
 
-		if (hitCount >= 3) {
+		if (hitCount >= 2) {
 
 			// まず止める
 			//html5QrCode.stop();←これだけでも問題ないが、止めてから処理したいから↓にする
