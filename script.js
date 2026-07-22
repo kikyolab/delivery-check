@@ -86,7 +86,7 @@ function createInvoiceList(values){
 
         const tdCheck = document.createElement("td");
         tdCheck.id = "invoiceTableCheck-" + item.barcode;
-        tdCheck.textContent ="□";
+        tdCheck.textContent = "□";
 
         const tdName = document.createElement("td");
         tdName.textContent = item.name;
@@ -236,7 +236,7 @@ new QRCode(document.getElementById("QRcode"), {
   //  text: window.location.href,　←これだと変な所に飛ばされる
   //	text: "https://script.google.com/macros/s/AKfycbzai84WZTv13V9aztLNcCkgYdTFui-4QeOtIiiDl3jd_8vUbRjf5hAEshVUrTZhQVu79Q/exec",
   //		↑ここもgas用のコーディング（GASのURL）
-  text: "https://kikyolb.github.io/delivery-check/",
+  text: "https://kikyolab.github.io/delivery-check/",
   width: 250,
   height: 250
 
