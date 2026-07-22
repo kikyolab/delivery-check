@@ -269,19 +269,22 @@ function startCamera(){
         { facingMode: "environment" },
 
         {
-            fps: 10,
-            qrbox: 250
+		fps: 5,
+		//qrbox: 250
+		qrbox: { width: 350, height: 150 }
         },
 
         function(decodedText){
 
             // まず止める
-            html5QrCode.stop();
+            //html5QrCode.stop();
 
             // バーコードをセットする
-            document.getElementById("HTMLbarcodeInputField").value = decodedText;
+            //document.getElementById("HTMLbarcodeInputField").value = decodedText;
 
-            checkBarcode();
+            //checkBarcode();
+            
+            console.log(decodedText);
 
         }
 
