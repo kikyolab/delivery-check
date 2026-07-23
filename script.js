@@ -292,7 +292,7 @@ function startCamera(){
 
 		}
 
-		alert(decodedText + "　回数：" + hitCount);
+		// alert(decodedText + "　回数：" + hitCount);
 
 		document.getElementById("result").innerHTML =
 		    decodedText + "　回数：" + hitCount;
