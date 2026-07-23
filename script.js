@@ -257,6 +257,9 @@ document
 
 const html5QrCode = new Html5Qrcode("cameraReader");
 
+let lastBarcode = "";
+let hitCount = 0;
+
 function startCamera(){
 
 	//alert( window.top==window.self);
