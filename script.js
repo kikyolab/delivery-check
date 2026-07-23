@@ -275,7 +275,10 @@ function startCamera(){
         },
 
         function(decodedText){
-		alert(decodedText);
+
+		alert(decodedText + "　回数：" + hitCount);
+
+
 //		if (decodedText === lastBarcode) {
 //		
 //		    hitCount++;
