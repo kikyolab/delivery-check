@@ -275,19 +275,20 @@ function startCamera(){
         },
 
         function(decodedText){
-		if (decodedText === lastBarcode) {
-		
-		    hitCount++;
-		
-		} else {
-		
-		    lastBarcode = decodedText;
-		    hitCount = 1;
+		lert(decodedText);
+//		if (decodedText === lastBarcode) {
+//		
+//		    hitCount++;
+//		
+//		} else {
+//		
+//		    lastBarcode = decodedText;
+//		    hitCount = 1;
 
-		}
+//		}
 
-document.getElementById("result").innerHTML =
-    decodedText + "　回数：" + hitCount;
+		document.getElementById("result").innerHTML =
+		    decodedText + "　回数：" + hitCount;
 
 		if (hitCount >= 3) {
 
