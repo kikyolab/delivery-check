@@ -270,8 +270,8 @@ function startCamera(){
 
         {
 		fps: 8,
-		//qrbox: 250
-		qrbox: { width: 350, height: 150 }
+		qrbox: 250
+		//qrbox: { width: 350, height: 150 }
         },
 
         function(decodedText){
