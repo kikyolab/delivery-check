@@ -1,4 +1,4 @@
-alert("script.js Ver2");
+// alert("script.js Ver2");
 //////////////////////////////////////////////////////
 // 検索用Map　の宣言（納品書のデータを入れるMap)
 //////////////////////////////////////////////////////
@@ -279,19 +279,20 @@ function startCamera(){
 
         function(decodedText){
 
+
+
+		if (decodedText === lastBarcode) {
+		
+		    hitCount++;
+		
+		} else {
+		
+		    lastBarcode = decodedText;
+		    hitCount = 1;
+
+		}
+
 		alert(decodedText + "　回数：" + hitCount);
-
-
-//		if (decodedText === lastBarcode) {
-//		
-//		    hitCount++;
-//		
-//		} else {
-//		
-//		    lastBarcode = decodedText;
-//		    hitCount = 1;
-
-//		}
 
 		document.getElementById("result").innerHTML =
 		    decodedText + "　回数：" + hitCount;
