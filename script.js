@@ -255,7 +255,7 @@ document
 // functionの中にいるならこれで良いが、"reader"がないのでは？
 // let html5QrCode; ←これがエラー
 
-const html5QrCode = new Html5Qrcode("reader");
+const html5QrCode = new Html5Qrcode("cameraReader");
 
 function startCamera(){
 
