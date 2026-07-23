@@ -275,7 +275,7 @@ function startCamera(){
         },
 
         function(decodedText){
-		lert(decodedText);
+		alert(decodedText);
 //		if (decodedText === lastBarcode) {
 //		
 //		    hitCount++;
