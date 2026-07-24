@@ -277,6 +277,8 @@ function startCamera() {
         
         cameraProcessing = true;
 
+        playBeep();
+
         document.getElementById("HTMLbarcodeInputField").value = decodedText;
 
         checkBarcode();
@@ -294,4 +296,34 @@ function startCamera() {
       //console.log(decodedText);
     },
   );
+}
+
+
+/////////////////////////////////////////////////////////
+// 読み取り完了を知らせるビープ音の設定部分
+/////////////////////////////////////////////////////////
+
+const BEEP_FREQ = 1200; // ヘルツ（数字が大きいほど高音）
+const BEEP_VOLUME = 0.1; // ボリューム（0:無音、1:既定、2:倍）
+const BEEP_TIME = 80; // ビープ音の時間(ミリ秒)
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+const gainNode = audioCtx.createGain();
+gainNode.gain.value = BEEP_VOLUME;
+gainNode.connect(audioCtx.destination);
+
+function playBeep() {
+
+    const osc = audioCtx.createOscillator();
+
+    osc.connect(gainNode);
+    osc.type = "sine";
+    osc.frequency.value = BEEP_FREQ;
+
+    osc.start();
+
+    setTimeout(() => {
+        osc.stop();
+    }, BEEP_TIME);
 }
