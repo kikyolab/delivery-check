@@ -158,7 +158,7 @@ function checkBarcode() {
     //	ここもgas用なのでコメントアウト
 
     //    ↓でHTML用納品書リストの□を??に変える
-    document.getElementById("invoiceTableCheck-" + barcode).textContent = "?";
+    document.getElementById("invoiceTableCheck-" + barcode).textContent = "✓";
 
     document.getElementById("result").innerHTML =
       "<span class='ok'>〇 " + item.name + "</span>"; //　入力された番号が納品書A1の中にあれば◯と商品名が表示される
