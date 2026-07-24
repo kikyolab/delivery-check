@@ -61,7 +61,9 @@ function loadMap(values) {
 ////////////////////////////////////////////////////////
 
 function createInvoiceList(values) {
+
   const tbody = document.getElementById("invoiceTableBody");
+
   tbody.innerHTML = "";
 
   values.forEach((item) => {
@@ -119,7 +121,7 @@ function addHistory(barcode, item) {
   if (item) {
     tdName.textContent = item.name;
   } else {
-    tdName.textContent = "? 商品が見つかりません";
+    tdName.textContent = "☓ 商品が見つかりません";
   }
 
   tr.appendChild(tdTime);

@@ -18,6 +18,10 @@
 
     }
 
+    .invoiceTable{
+      size: 2rem;
+    }
+
     .cameraButtonArea{
       width: 100%;
       padding: 10px;
