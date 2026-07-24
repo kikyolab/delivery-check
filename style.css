@@ -18,8 +18,13 @@
 
     }
 
-    .invoiceTable{
-      font-size: 2rem;
+    .selectionTitle{
+      font-size: 3rem;
+      text-align: center;
+    }
+
+    .productName{
+      width: 70%;
     }
 
     .cameraButtonArea{
@@ -102,6 +107,7 @@
 
       border:1px solid #ccc;
       padding:6px;
+      font-size:2.5rem;
 
     }
 
