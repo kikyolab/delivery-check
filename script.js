@@ -1,4 +1,3 @@
-// alert("script.js Ver2");
 //////////////////////////////////////////////////////
 // 検索用Map　の宣言（納品書のデータを入れるMap)
 //////////////////////////////////////////////////////
@@ -11,9 +10,6 @@ const invoiceMap = new Map();
 //////////////////////////////////////////////////////
 
 window.onload = function () {
-  //	fetch("https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec")
-  //	.then(r => r.json())
-  //	.then(loadMap);
 
   fetch(
     "https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec",
@@ -44,7 +40,6 @@ function loadMap(values) {
 
   createInvoiceList(values);
 
-  //alert(invoiceMap.get("1111"));
   // console.log(JSON.stringify(Object.fromEntries(invoiceMap),null,2));
   // Object.fromEntries(マップの名前)　←この部分でMapオブジェクトを連想配列（javascriptオブジェクト）に変換する
   //      JSON.stringifyはMapをそのまま渡しても空白にするので連想配列に変形させる必要がある
@@ -198,7 +193,25 @@ new QRCode(document.getElementById("QRcode"), {
 // カメラ起動
 //////////////////////////////////////////////////////
 
-document.getElementById("startCamera").addEventListener("click", startCamera);
+//document.getElementById("startCamera").addEventListener("click", startCamera); ←カメラを止める方法がない頃のヤツ
+document.getElementById("startCamera").addEventListener("click", async () => {
+
+  if( cameraRunning ){
+    //カメラ停止
+    await html5QrCode.stop();
+    cameraRunning = false;
+
+    document.getElementById("startCamera").textContent = "カメラ起動";
+  
+  }else{
+    // カメラ開始
+    await startCamera();
+    cameraRunning = true;
+
+    document.getElementById("startCamera").textContent = "カメラ停止";
+
+  }
+});
 
 // functionの中にいるならこれで良いが、"reader"がないのでは？
 // let html5QrCode; ←これがエラー
@@ -208,15 +221,9 @@ const html5QrCode = new Html5Qrcode("cameraReader");
 let lastBarcode = "";
 let hitCount = 0;
 let cameraProcessing = false;
+let cameraRunning = false;
 
-function startCamera() {
-  //alert( window.top==window.self);
-  //  const html5QrCode = new Html5Qrcode("reader");
-  //    ↑ここだとこのファンクションの外で使えないので外に移動
-
-  //const qrWidth = Math.min(Math.floor(window.innerWidth * 0.85), 380);
-  //const qrHeight = Math.min(Math.floor(window.innerWidth * 0.4), 380);
-  //        ↑Math.min()があると、小さい方を選択されるから無くす
+async function startCamera() {
 
   const QR_WIDTH_RATE = 0.85; //　画面幅に対する読み取り枠の横幅（割合)
   const QR_HEIGHT_RATE = 0.4; //　画面幅に対する読み取り枠の高さ（割合)
@@ -225,15 +232,14 @@ function startCamera() {
   const qrHeight = Math.floor(window.innerWidth * QR_HEIGHT_RATE);
 
 
-  html5QrCode.start(
+  await html5QrCode.start(
     { facingMode: "environment" },
 
     {
-      fps: 8,
-      //qrbox: 250
-      //qrbox: { width: 350, height: 150 }
+      fps: 10,
 
       qrbox: { width: qrWidth, height: qrHeight },
+      
     },
 
     function (decodedText) {
@@ -245,9 +251,10 @@ function startCamera() {
       }
 
       // alert(decodedText + "　回数：" + hitCount);
-
-      document.getElementById("result").innerHTML =
-        decodedText + "　回数：" + hitCount;
+      //
+      //  動作確認用（バーコードが何回ヒットしたか）
+      //document.getElementById("result").innerHTML =
+      //  decodedText + "　回数：" + hitCount;
 
 
 
