@@ -207,6 +207,7 @@ const html5QrCode = new Html5Qrcode("cameraReader");
 
 let lastBarcode = "";
 let hitCount = 0;
+let cameraProcessing = false;
 
 function startCamera() {
   //alert( window.top==window.self);
@@ -248,27 +249,47 @@ function startCamera() {
       document.getElementById("result").innerHTML =
         decodedText + "　回数：" + hitCount;
 
-      if (hitCount >= 3) {
+
+
+      // if (hitCount >= 3) {
         // まず止める
         //html5QrCode.stop();←これだけでも問題ないが、止めてから処理したいから↓にする
 
-        html5QrCode
-          .stop()
-          .then(() => {
-            // バーコードをセットする
-            document.getElementById("HTMLbarcodeInputField").value =
-              decodedText;
+        //html5QrCode
+        //  .stop()
+        //  .then(() => {
+        //    // バーコードをセットする
+        //    document.getElementById("HTMLbarcodeInputField").value =
+        //      decodedText;
 
             //万が一の再利用の為にチェック用バーコード変数をクリアする
-            lastBarcode = "";
-            hitCount = 0;
+        //    lastBarcode = "";
+        //    hitCount = 0;
 
-            checkBarcode();
-          })
-          .catch((err) => {
-            console.error(err);
-          });
+        //    checkBarcode();
+        //  })
+        //  .catch((err) => {
+        //    console.error(err);
+        //  });
+        //  ↑ 撮影後にカメラを止めるscript
+
+      if( hitCount >= 3 && !cameraProcessing ){
+        
+        cameraProcessing = true;
+
+        document.getElementById("HTMLbarcodeInputField").value = decodedText;
+
+        checkBarcode();
+        
+        setTimeout(() => {
+          lastBarcode = "";
+          hitCount = 0;
+          cameraProcessing = false;
+        }, 2000 );
+        
       }
+
+
 
       //console.log(decodedText);
     },
