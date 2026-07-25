@@ -10,7 +10,6 @@ const invoiceMap = new Map();
 //////////////////////////////////////////////////////
 
 window.onload = function () {
-
   fetch(
     "https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec",
   )
@@ -56,7 +55,6 @@ function loadMap(values) {
 ////////////////////////////////////////////////////////
 
 function createInvoiceList(values) {
-
   const tbody = document.getElementById("invoiceTableBody");
 
   tbody.innerHTML = "";
@@ -102,7 +100,7 @@ document.getElementById("HTMLbarcodeInputField").addEventListener(
 //////////////////////////////////////////////////////
 
 function addHistory(barcode, item) {
-  const tbody = document.getElementById("historyBody");
+  //const tbody = document.getElementById("historyBody");
 
   const tr = document.createElement("tr");
 
@@ -195,21 +193,18 @@ new QRCode(document.getElementById("QRcode"), {
 
 //document.getElementById("startCamera").addEventListener("click", startCamera); ←カメラを止める方法がない頃のヤツ
 document.getElementById("startCamera").addEventListener("click", async () => {
-
-  if( cameraRunning ){
+  if (cameraRunning) {
     //カメラ停止
     await html5QrCode.stop();
     cameraRunning = false;
 
     document.getElementById("startCamera").textContent = "カメラ起動";
-  
-  }else{
+  } else {
     // カメラ開始
     await startCamera();
     cameraRunning = true;
 
     document.getElementById("startCamera").textContent = "カメラ停止";
-
   }
 });
 
@@ -223,25 +218,33 @@ let hitCount = 0;
 let cameraProcessing = false;
 let cameraRunning = false;
 
-async function startCamera() {
+//  カメラの連続読み込み防止のためのフラグ
+let scanLocked = false;
+let noReadCount = 0;
 
+async function startCamera() {
   const QR_WIDTH_RATE = 0.85; //　画面幅に対する読み取り枠の横幅（割合)
   const QR_HEIGHT_RATE = 0.4; //　画面幅に対する読み取り枠の高さ（割合)
 
+  // 読み取り枠の実際の数値を計算
   const qrWidth = Math.floor(window.innerWidth * QR_WIDTH_RATE);
   const qrHeight = Math.floor(window.innerWidth * QR_HEIGHT_RATE);
 
-
   await html5QrCode.start(
+    // html5QrCode.star()←これに引数を渡す
+    //  html5QrCode.star( cameraconfig, config, onScanSuccess, onScanFailure )まである
+    //    引数を｛｝で指定する。引数が関数ならfunction(){}で渡せる
+
+    //  引数1（cameraconfig)
     { facingMode: "environment" },
 
+    //  引数2 (config)
     {
       fps: 10,
-
       qrbox: { width: qrWidth, height: qrHeight },
-      
     },
 
+    //  引数3(onScanSuccess)
     function (decodedText) {
       if (decodedText === lastBarcode) {
         hitCount++;
@@ -256,55 +259,41 @@ async function startCamera() {
       //document.getElementById("result").innerHTML =
       //  decodedText + "　回数：" + hitCount;
 
-
-
-      // if (hitCount >= 3) {
-        // まず止める
-        //html5QrCode.stop();←これだけでも問題ないが、止めてから処理したいから↓にする
-
-        //html5QrCode
-        //  .stop()
-        //  .then(() => {
-        //    // バーコードをセットする
-        //    document.getElementById("HTMLbarcodeInputField").value =
-        //      decodedText;
-
-            //万が一の再利用の為にチェック用バーコード変数をクリアする
-        //    lastBarcode = "";
-        //    hitCount = 0;
-
-        //    checkBarcode();
-        //  })
-        //  .catch((err) => {
-        //    console.error(err);
-        //  });
-        //  ↑ 撮影後にカメラを止めるscript
-
-      if( hitCount >= 3 && !cameraProcessing ){
-        
+      if (hitCount >= 3 && !cameraProcessing && !scanLocked) {
         cameraProcessing = true;
+        scanLocked = true;
+        noReadCount = 0;
 
         playBeep();
 
         document.getElementById("HTMLbarcodeInputField").value = decodedText;
 
         checkBarcode();
-        
+
         setTimeout(() => {
           lastBarcode = "";
           hitCount = 0;
           cameraProcessing = false;
-        }, 2000 );
-        
+        }, 500);
       }
-
-
-
-      //console.log(decodedText);
     },
+
+    //  引数4(onScanFailure)
+    function (errorMessage) {
+      if (scanLocked) {
+        noReadCount++;
+
+        //　20回失敗したら読み込みを止める（fpsが10で、ここが20だと2秒でカウントが終わり次を撮影する
+        if (noReadCount >= 20) {
+          //バーコードが見えていない状態
+          scanLocked = false;
+
+          noReadCount = 0;
+        }
+      }
+    }
   );
 }
-
 
 /////////////////////////////////////////////////////////
 // 読み取り完了を知らせるビープ音の設定部分
@@ -321,16 +310,15 @@ gainNode.gain.value = BEEP_VOLUME;
 gainNode.connect(audioCtx.destination);
 
 function playBeep() {
+  const osc = audioCtx.createOscillator();
 
-    const osc = audioCtx.createOscillator();
+  osc.connect(gainNode);
+  osc.type = "sine";
+  osc.frequency.value = BEEP_FREQ;
 
-    osc.connect(gainNode);
-    osc.type = "sine";
-    osc.frequency.value = BEEP_FREQ;
+  osc.start();
 
-    osc.start();
-
-    setTimeout(() => {
-        osc.stop();
-    }, BEEP_TIME);
+  setTimeout(() => {
+    osc.stop();
+  }, BEEP_TIME);
 }
