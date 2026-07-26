@@ -191,22 +191,6 @@ new QRCode(document.getElementById("QRcode"), {
 // カメラ起動
 //////////////////////////////////////////////////////
 
-//document.getElementById("startCamera").addEventListener("click", startCamera); ←カメラを止める方法がない頃のヤツ
-document.getElementById("startCamera").addEventListener("click", async () => {
-  if (cameraRunning) {
-    //カメラ停止
-    await html5QrCode.stop();
-    cameraRunning = false;
-
-    document.getElementById("startCamera").textContent = "カメラ起動";
-  } else {
-    // カメラ開始
-    await startCamera();
-    cameraRunning = true;
-
-    document.getElementById("startCamera").textContent = "カメラ停止";
-  }
-});
 
 // functionの中にいるならこれで良いが、"reader"がないのでは？
 // let html5QrCode; ←これがエラー
@@ -222,7 +206,30 @@ let cameraRunning = false;
 let scanLocked = false;
 let noReadCount = 0;
 
+
+//document.getElementById("startCamera").addEventListener("click", startCamera); ←カメラを止める方法がない頃のヤツ
+document.getElementById("startCamera").addEventListener("click", async () => {
+  
+  //alert("ボタン押された");
+  
+  if (cameraRunning) {
+    //カメラ停止
+    await html5QrCode.stop();
+    cameraRunning = false;
+
+    document.getElementById("startCamera").textContent = "カメラ起動";
+  } else {
+    // カメラ開始
+    await startCamera();
+    cameraRunning = true;
+
+    document.getElementById("startCamera").textContent = "カメラ停止";
+  }
+});
+
 async function startCamera() {
+
+
   const QR_WIDTH_RATE = 0.85; //　画面幅に対する読み取り枠の横幅（割合)
   const QR_HEIGHT_RATE = 0.4; //　画面幅に対する読み取り枠の高さ（割合)
 
@@ -230,6 +237,7 @@ async function startCamera() {
   const qrWidth = Math.floor(window.innerWidth * QR_WIDTH_RATE);
   const qrHeight = Math.floor(window.innerWidth * QR_HEIGHT_RATE);
 
+  
   await html5QrCode.start(
     // html5QrCode.star()←これに引数を渡す
     //  html5QrCode.star( cameraconfig, config, onScanSuccess, onScanFailure )まである
@@ -237,15 +245,28 @@ async function startCamera() {
 
     //  引数1（cameraconfig)：どのカメラを使用するかの指定（facingMode="user"なら画面側、facingMode="environment"なら背面
     { facingMode: "environment" },
+    //{ facingMode: "user" },
 
     //  引数2 (config)：読み取り設定（撮影範囲、fps設定など）
     {
       fps: 10,
-      qrbox: { width: qrWidth, height: qrHeight },
+      //qrbox: { width: qrWidth, height: qrHeight },
+      qrbox: {
+        width: 300,
+        height: 150
+      }
     },
 
     //  引数3(onScanSuccess)：解析に成功時の処理(decodedTextは名称自由な変数名。その値はhtml5QrCodeから渡される第一引数)
     function (decodedText) {
+
+      
+      if (scanLocked) return;
+        // ↓と同じ意味の省略形
+        //if(scanLocked){ return; }
+
+      alert( decodedText );
+
       if (decodedText === lastBarcode) {
         hitCount++;
       } else {
@@ -260,6 +281,16 @@ async function startCamera() {
       //  decodedText + "　回数：" + hitCount;
 
       if (hitCount >= 3 && !cameraProcessing && !scanLocked) {
+          
+        //console.log("解析:", decodedText);
+
+        //if (scanLocked)return;
+        // {
+
+          //console.log("ロック中なので無視");
+          //return;
+
+        //}
         cameraProcessing = true;
         scanLocked = true;
         noReadCount = 0;
@@ -271,10 +302,17 @@ async function startCamera() {
         checkBarcode();
 
         setTimeout(() => {
+            alert(
+              "リセット\n" +
+              "hit=" + hitCount +
+              "\nlast=" + lastBarcode
+            );
+
           lastBarcode = "";
           hitCount = 0;
           cameraProcessing = false;
-        }, 500);
+          scanLocked = false;
+        }, 2000);
       }
     },
 
@@ -302,8 +340,12 @@ async function startCamera() {
         }
       }
     }
+
   );
 }
+
+
+
 
 /////////////////////////////////////////////////////////
 // 読み取り完了を知らせるビープ音の設定部分
