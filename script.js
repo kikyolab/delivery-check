@@ -235,17 +235,18 @@ async function startCamera() {
     //  html5QrCode.star( cameraconfig, config, onScanSuccess, onScanFailure )まである
     //    引数を｛｝で指定する。引数が関数ならfunction(){}で渡せる
 
-    //  引数1（cameraconfig)
+    //  引数1（cameraconfig)：どのカメラを使用するかの指定（facingMode="user"なら画面側、facingMode="environment"なら背面
     { facingMode: "environment" },
 
-    //  引数2 (config)
+    //  引数2 (config)：読み取り設定（撮影範囲、fps設定など）
     {
       fps: 10,
       qrbox: { width: qrWidth, height: qrHeight },
     },
 
-    //  引数3(onScanSuccess)
+    //  引数3(onScanSuccess)：解析に成功時の処理(decodedTextは名称自由な変数名。その値はhtml5QrCodeから渡される第一引数)
     function (decodedText) {
+      console.log("success", decodedText);
       if (decodedText === lastBarcode) {
         hitCount++;
       } else {
@@ -278,8 +279,9 @@ async function startCamera() {
       }
     },
 
-    //  引数4(onScanFailure)
+    //  引数4(onScanFailure) ：解析に失敗時の処理（errorMessageは名称自由な変数。値はhtml5QrCodeから渡される）
     function (errorMessage) {
+      console.log("fail");
       if (scanLocked) {
         noReadCount++;
 
