@@ -246,7 +246,7 @@ async function startCamera() {
 
     //  引数3(onScanSuccess)：解析に成功時の処理(decodedTextは名称自由な変数名。その値はhtml5QrCodeから渡される第一引数)
     function (decodedText) {
-      console.log("success", decodedText);
+      alert("success", decodedText);
       if (decodedText === lastBarcode) {
         hitCount++;
       } else {
@@ -281,7 +281,7 @@ async function startCamera() {
 
     //  引数4(onScanFailure) ：解析に失敗時の処理（errorMessageは名称自由な変数。値はhtml5QrCodeから渡される）
     function (errorMessage) {
-      console.log("fail");
+      alert("fail");
       if (scanLocked) {
         noReadCount++;
 
