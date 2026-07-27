@@ -14,15 +14,15 @@ window.onload = function () {
     "https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec",
   )
     .then((r) => {
-      console.log("Response:", r);
+      //console.log("Response:", r);
       return r.json();
     })
     .then((data) => {
-      console.log("Data:", data);
+      //console.log("Data:", data);
       loadMap(data);
     })
     .catch((err) => {
-      console.error("Fetch Error:", err);
+      //console.error("Fetch Error:", err);
     });
 };
 
@@ -102,9 +102,15 @@ document.getElementById("HTMLbarcodeInputField").addEventListener(
 function addHistory(barcode, item) {
   //const tbody = document.getElementById("historyBody");
 
+  const tbody = document.getElementById("historyBody")
+
+  //console.log("historyBody確認", tbody);
+  
+
   const tr = document.createElement("tr");
 
   const tdTime = document.createElement("td");
+  
   tdTime.textContent = new Date().toLocaleTimeString();
 
   const tdBarcode = document.createElement("td");
@@ -129,13 +135,8 @@ function addHistory(barcode, item) {
 //////////////////////////////////////////////////////
 
 function checkBarcode() {
-  //console.log(barcode);
 
   const barcode = document.getElementById("HTMLbarcodeInputField").value;
-
-  //  console.log(barcode);
-  //  console.log(typeof barcode);
-
   const item = invoiceMap.get(barcode);
 
   if (item) {
@@ -164,7 +165,10 @@ function checkBarcode() {
 
   document.getElementById("HTMLbarcodeInputField").value = "";
 
-  document.getElementById("HTMLbarcodeInputField").focus();
+  //document.getElementById("HTMLbarcodeInputField").focus();
+  //  ↑手入力専用の頃に入力欄にフォーカスする事でソフトウェアキーボードを表示させたりしていた
+  //    カメラ読み取りを前提にして、入力欄は補助としたため不要になった
+  //        むしろ自動でソフトウェアキーボードが出て邪魔になる
 
   //  console.log(typeof Array.from(invoiceMap)[0][0]);
 
@@ -176,7 +180,7 @@ function checkBarcode() {
 //QRコードの作成と表示
 ///////////////////////////////////////////////////////
 
-console.log(window.location.href);
+//console.log(window.location.href);
 
 new QRCode(document.getElementById("QRcode"), {
   //  text: window.location.href,　←これだと変な所に飛ばされる
@@ -204,6 +208,7 @@ let cameraRunning = false;
 
 //  カメラの連続読み込み防止のためのフラグ
 let scanLocked = false;
+let cooldown = false;
 let noReadCount = 0;
 
 
@@ -220,6 +225,9 @@ document.getElementById("startCamera").addEventListener("click", async () => {
     document.getElementById("startCamera").textContent = "カメラ起動";
   } else {
     // カメラ開始
+
+    //alert("start直前");
+
     await startCamera();
     cameraRunning = true;
 
@@ -229,6 +237,7 @@ document.getElementById("startCamera").addEventListener("click", async () => {
 
 async function startCamera() {
 
+  //alert("startCamera開始");
 
   const QR_WIDTH_RATE = 0.85; //　画面幅に対する読み取り枠の横幅（割合)
   const QR_HEIGHT_RATE = 0.4; //　画面幅に対する読み取り枠の高さ（割合)
@@ -237,35 +246,39 @@ async function startCamera() {
   const qrWidth = Math.floor(window.innerWidth * QR_WIDTH_RATE);
   const qrHeight = Math.floor(window.innerWidth * QR_HEIGHT_RATE);
 
-  
-  await html5QrCode.start(
-    // html5QrCode.star()←これに引数を渡す
-    //  html5QrCode.star( cameraconfig, config, onScanSuccess, onScanFailure )まである
-    //    引数を｛｝で指定する。引数が関数ならfunction(){}で渡せる
 
-    //  引数1（cameraconfig)：どのカメラを使用するかの指定（facingMode="user"なら画面側、facingMode="environment"なら背面
+  /////////////////////////////////////////////////////////////////////////
+  //  ここからスキャン関連の分岐（html50QrCode)
+  // html5QrCode.star()←これに引数を渡す
+  //  html5QrCode.star( cameraconfig, config, onScanSuccess, onScanFailure )まである
+  //    引数を｛｝で指定する。引数が関数ならfunction(){}で渡せる
+  /////////////////////////////////////////////////////////////////////////
+  await html5QrCode.start(
+ 
+    //  >引数1（cameraconfig)：どのカメラを使用するかの指定（facingMode="user"なら画面側、facingMode="environment"なら背面
     { facingMode: "environment" },
     //{ facingMode: "user" },
 
-    //  引数2 (config)：読み取り設定（撮影範囲、fps設定など）
+    //  =>引数2 (config)：読み取り設定（撮影範囲、fps設定など）
     {
       fps: 10,
-      //qrbox: { width: qrWidth, height: qrHeight },
       qrbox: {
-        width: 300,
-        height: 150
-      }
+        width: qrWidth,
+        height: qrHeight
+      },
     },
 
-    //  引数3(onScanSuccess)：解析に成功時の処理(decodedTextは名称自由な変数名。その値はhtml5QrCodeから渡される第一引数)
+    //  =>引数3(onScanSuccess)：解析に成功時の処理(decodedTextは名称自由な変数名。その値はhtml5QrCodeから渡される第一引数)
     function (decodedText) {
 
       
       if (scanLocked) return;
         // ↓と同じ意味の省略形
-        //if(scanLocked){ return; }
+        //if(scanLocked){ return; } ←ロックされている状態scanLocked===trueならココで抜ける
 
-      alert( decodedText );
+      //scanLocked = true; //スキャンを停止するフラグを立てる
+
+      console.log("読み取り：", decodedText);
 
       if (decodedText === lastBarcode) {
         hitCount++;
@@ -274,69 +287,71 @@ async function startCamera() {
         hitCount = 1;
       }
 
-      // alert(decodedText + "　回数：" + hitCount);
-      //
-      //  動作確認用（バーコードが何回ヒットしたか）
-      //document.getElementById("result").innerHTML =
-      //  decodedText + "　回数：" + hitCount;
-
       if (hitCount >= 3 && !cameraProcessing && !scanLocked) {
-          
+        //console.log("3回達成") ;
         //console.log("解析:", decodedText);
+        //ccanLockedが解除されているか（初期はfalse)
 
-        //if (scanLocked)return;
-        // {
+        // スキャンの処理を停止するフラグ処理
+        lockScannerFlg();
 
-          //console.log("ロック中なので無視");
-          //return;
-
-        //}
-        cameraProcessing = true;
-        scanLocked = true;
-        noReadCount = 0;
-
+        // スキャン成功を音で知らせる処理
         playBeep();
 
-        document.getElementById("HTMLbarcodeInputField").value = decodedText;
+        // HTMLにスキャンしたバーコードを渡す
+        setBarcodeHtmlInput(decodedText);
+
+        console.log("ロック設定", scanLocked);
 
         checkBarcode();
 
+        //console.log("checkBarcode後")
+
+        /*
+        解析を2秒止める処理なのでパターンを変える為にコメントアウト
         setTimeout(() => {
-            alert(
-              "リセット\n" +
-              "hit=" + hitCount +
-              "\nlast=" + lastBarcode
-            );
+
+          //console.log("リセット実行");
+
+          //console.log("解除前",lastBarcode, hitCount);
 
           lastBarcode = "";
           hitCount = 0;
           cameraProcessing = false;
           scanLocked = false;
         }, 2000);
+        */
       }
     },
 
-    //  引数4(onScanFailure) ：解析に失敗時の処理（errorMessageは名称自由な変数。値はhtml5QrCodeから渡される）
+    //  =>引数4(onScanFailure) ：解析に失敗時の処理（errorMessageは名称自由な変数。値はhtml5QrCodeから渡される）
+    //      もし、次のスキャンを待機時間だけでやるなら、このファンクション全体が不要
+    //        第三引数最後のsetTimeoutのミリ秒を増やすだけで良い
     function (errorMessage) {
-      if (scanLocked) {
-        noReadCount++;
 
-        if(noReadCount >= 20 ){
-          //alert( "解除\n" + "hit=" + hitCount + "\nlast=" + lastBarcode );
-          alert(
-              "解除\n" +
-              "hit=" + hitCount +
-              "\nlock=" + scanLocked +
-              "\nlast=" + lastBarcode
-            );
+      //console.log("失敗側", errorMessage);
+      if (scanLocked) {
+
+        // クールダウン中は無視
+        if( cooldown){
+          return;
         }
+
+        noReadCount++;
+        console.log("失敗カウント", noReadCount);
 
         //　20回失敗したら読み込みを止める（fpsが10で、ここが20だと2秒でカウントが終わり次を撮影する
         if (noReadCount >= 20) {
-          //バーコードが見えていない状態
-          scanLocked = false;
+          console.log("バーコード消失、解除");
 
-          noReadCount = 0;
+          //バーコードを読む状態に戻す
+          scanLocked = false; //  読み取り許可を戻す
+          cooldown = false; //　次の処理をするまでの時間FLG
+          noReadCount = 0;  //  消失判定カウンターを戻す
+          hitCount = 0; //  前のバーコードのカウントをクリア
+          lastBarcode = ""; //  前の商品との比較をリセット
+          cameraProcessing = false;
+
         }
       }
     }
@@ -345,6 +360,26 @@ async function startCamera() {
 }
 
 
+///////////////////////////////////////////////////////////
+// スキャンが成功しても一時的に処理を停止するためのフラグ処理
+///////////////////////////////////////////////////////////
+function lockScannerFlg(){
+  cameraProcessing = true;
+  scanLocked = true;
+  noReadCount = 0;
+  cooldown = true;
+
+  setTimeout(() => {
+    cooldown = false;
+  },2000);
+}
+
+///////////////////////////////////////////////////////////
+// スキャンされたバーコードをHTMLのINPUTエリアに渡す
+///////////////////////////////////////////////////////////
+function setBarcodeHtmlInput(decodedText){
+  document.getElementById("HTMLbarcodeInputField").value = decodedText;
+}
 
 
 /////////////////////////////////////////////////////////
