@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////
 
 const invoiceMap = new Map();
+const history = [];
 // ここで指定しないと、全ての関数で共有できない
 
 //////////////////////////////////////////////////////
@@ -270,8 +271,8 @@ document.getElementById("startCamera").addEventListener("click", async () => {
 });
 
 async function startCamera() {
-
-  //alert("startCamera開始");
+  try{
+  console.log("startCamera開始");
 
   const QR_WIDTH_RATE = 0.85; //　画面幅に対する読み取り枠の横幅（割合)
   const QR_HEIGHT_RATE = 0.4; //　画面幅に対する読み取り枠の高さ（割合)
@@ -353,7 +354,8 @@ async function startCamera() {
     //        第三引数最後のsetTimeoutのミリ秒を増やすだけで良い
     function (errorMessage) {
 
-      //console.log("失敗側", errorMessage);
+      console.log("読み取り失敗", errorMessage);
+      
       if (scanLocked) {
 
         // クールダウン中は無視(ここで処理終了)
@@ -362,7 +364,7 @@ async function startCamera() {
         noReadCount++;
 
         //　10回失敗したら読み込みを止める（fpsが10で、ここが20だと2秒でカウントが終わり次を撮影する
-        if (noReadCount >= 10) {
+        if (noReadCount >= 20) {
 
           //バーコードを読む状態に戻す処理
           resetBarcodeScan();
@@ -372,6 +374,11 @@ async function startCamera() {
     }
 
   );
+
+  console.log("カメラ起動成功");
+} catch(error){
+  console.error( "カメラ起動失敗", error );
+}
 }
 
 /////////////////////////////////////////////////////////////
