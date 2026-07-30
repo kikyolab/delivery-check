@@ -95,12 +95,28 @@ document.getElementById("HTMLbarcodeInputField").addEventListener(
   },
 );
 
+
+
 //////////////////////////////////////////////////////
 // 履歴へ追加
 //////////////////////////////////////////////////////
 
 function addHistory(barcode, item) {
   //const tbody = document.getElementById("historyBody");
+
+  const name = item ? item.name : "リストに無い"
+  // if文の三項演算子 (条件 ? 条件が真のとき : 条件が偽のとき)
+  //  同じ処理
+  //    const name;
+  //    if( item ){ name = item.name; }else{ name = "リストに無い"; }
+
+  history.unshift({
+
+    barcode: barcode,
+    name: name
+
+  });
+
 
   const tbody = document.getElementById("historyBody")
 
@@ -153,7 +169,7 @@ function checkBarcode() {
     //      スプレットシートに??を追加するだけでHTMLでは何もしないので .withSuccessHandler()が無い書き方
     //	ここもgas用なのでコメントアウト
 
-    //    ↓でHTML用納品書リストの□を??に変える
+    //    ↓でHTML用納品書リストの□を☑に変える
     document.getElementById("invoiceTableCheck-" + barcode).textContent = "✓";
 
     document.getElementById("result").innerHTML =
@@ -174,6 +190,9 @@ function checkBarcode() {
 
   //    ↓バーコードを読み込む度に履歴を記録していく
   addHistory(barcode, item);
+
+  // itemをスキャン成功後の処理（checkBarcode()を呼び出す関数）でも使いたいのでreturnする
+  return item;
 }
 
 ///////////////////////////////////////////////////////
@@ -184,8 +203,6 @@ function checkBarcode() {
 
 new QRCode(document.getElementById("QRcode"), {
   //  text: window.location.href,　←これだと変な所に飛ばされる
-  //	text: "https://script.google.com/macros/s/AKfycbzai84WZTv13V9aztLNcCkgYdTFui-4QeOtIiiDl3jd_8vUbRjf5hAEshVUrTZhQVu79Q/exec",
-  //		↑ここもgas用のコーディング（GASのURL）
   text: "https://kikyolab.github.io/delivery-check/",
   width: 250,
   height: 250,
@@ -211,6 +228,10 @@ let scanLocked = false;
 let cooldown = false;
 let noReadCount = 0;
 
+//  通信関係のグローバル関数
+let postScanList = []; // 通信用に読み取った行番号を入れる配列
+let sendingFLG = false; // 送信中フラグ
+
 
 //document.getElementById("startCamera").addEventListener("click", startCamera); ←カメラを止める方法がない頃のヤツ
 document.getElementById("startCamera").addEventListener("click", async () => {
@@ -223,6 +244,19 @@ document.getElementById("startCamera").addEventListener("click", async () => {
     cameraRunning = false;
 
     document.getElementById("startCamera").textContent = "カメラ起動";
+
+    await sendScanList();
+
+    //const response =
+    //  await fetch("https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec", {
+    //    method: "POST",
+    //    body: "2"
+    //  });
+
+    //const result = await response.text();
+
+    //console.log(result);
+
   } else {
     // カメラ開始
 
@@ -251,7 +285,7 @@ async function startCamera() {
   //  ここからスキャン関連の分岐（html50QrCode)
   // html5QrCode.star()←これに引数を渡す
   //  html5QrCode.star( cameraconfig, config, onScanSuccess, onScanFailure )まである
-  //    引数を｛｝で指定する。引数が関数ならfunction(){}で渡せる
+  //    引数を｛｝で指定して[,]で区切る。引数が関数ならfunction(){}で渡せる
   /////////////////////////////////////////////////////////////////////////
   await html5QrCode.start(
  
@@ -269,58 +303,48 @@ async function startCamera() {
     },
 
     //  =>引数3(onScanSuccess)：解析に成功時の処理(decodedTextは名称自由な変数名。その値はhtml5QrCodeから渡される第一引数)
-    function (decodedText) {
-
+    async function (decodedText) {
       
-      if (scanLocked) return;
+      if (scanLocked) return; // ←ロックされている状態(scanLocked===true)ならココで抜ける
         // ↓と同じ意味の省略形
-        //if(scanLocked){ return; } ←ロックされている状態scanLocked===trueならココで抜ける
+        //if(scanLocked){ return; }
 
-      //scanLocked = true; //スキャンを停止するフラグを立てる
-
-      console.log("読み取り：", decodedText);
-
+      //  読み込まれたバーコードが連続3回同じ数字かチェック（誤読回避処理）
       if (decodedText === lastBarcode) {
+
         hitCount++;
+
       } else {
+
         lastBarcode = decodedText;
         hitCount = 1;
       }
 
+      //  正確に読み込んだかの判断（3回連続同じ数字 + サーバ送信処理などを行っていない + 撮影成功のバーコードが映り続けていない)
       if (hitCount >= 3 && !cameraProcessing && !scanLocked) {
-        //console.log("3回達成") ;
-        //console.log("解析:", decodedText);
-        //ccanLockedが解除されているか（初期はfalse)
 
-        // スキャンの処理を停止するフラグ処理
+        // スキャンを停止するフラグ処理
         lockScannerFlg();
 
-        // スキャン成功を音で知らせる処理
+        // スキャン成功を音で知らせる
         playBeep();
 
         // HTMLにスキャンしたバーコードを渡す
         setBarcodeHtmlInput(decodedText);
 
-        console.log("ロック設定", scanLocked);
+        //console.log("ロック設定", scanLocked);
+        const successItem = checkBarcode();
 
-        checkBarcode();
+        // 読み取った商品の行番号を保存
+        if( successItem ){
 
-        //console.log("checkBarcode後")
+          postScanList.push({
+            row: successItem.sheetRow,
+            barcode: decodedText
+          });
 
-        /*
-        解析を2秒止める処理なのでパターンを変える為にコメントアウト
-        setTimeout(() => {
+        }
 
-          //console.log("リセット実行");
-
-          //console.log("解除前",lastBarcode, hitCount);
-
-          lastBarcode = "";
-          hitCount = 0;
-          cameraProcessing = false;
-          scanLocked = false;
-        }, 2000);
-        */
       }
     },
 
@@ -332,31 +356,100 @@ async function startCamera() {
       //console.log("失敗側", errorMessage);
       if (scanLocked) {
 
-        // クールダウン中は無視
-        if( cooldown){
-          return;
-        }
+        // クールダウン中は無視(ここで処理終了)
+        if( cooldown ) return;
 
         noReadCount++;
-        console.log("失敗カウント", noReadCount);
 
-        //　20回失敗したら読み込みを止める（fpsが10で、ここが20だと2秒でカウントが終わり次を撮影する
-        if (noReadCount >= 20) {
-          console.log("バーコード消失、解除");
+        //　10回失敗したら読み込みを止める（fpsが10で、ここが20だと2秒でカウントが終わり次を撮影する
+        if (noReadCount >= 10) {
 
-          //バーコードを読む状態に戻す
-          scanLocked = false; //  読み取り許可を戻す
-          cooldown = false; //　次の処理をするまでの時間FLG
-          noReadCount = 0;  //  消失判定カウンターを戻す
-          hitCount = 0; //  前のバーコードのカウントをクリア
-          lastBarcode = ""; //  前の商品との比較をリセット
-          cameraProcessing = false;
+          //バーコードを読む状態に戻す処理
+          resetBarcodeScan();
 
         }
       }
     }
 
   );
+}
+
+/////////////////////////////////////////////////////////////
+//  GASへ送信する
+/////////////////////////////////////////////////////////////
+async function sendScanList(){
+  if(postScanList.length === 0){
+
+    console.log("送信データなし");
+    return;
+
+  }
+
+  if( sendingFLG ){
+
+    console.log("送信中");
+    return;
+
+  }
+
+  sendingFLG = true;
+
+  try{
+    console.log("送信データ", postScanList);
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbwiFWs9TTLqKIqcJwrFGPmApoAmDkBuxVBFWKxRU4cU1-Ql3ZwQDlfVRhYu-Le_06bt/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type" : "application/json"
+        },
+        body: JSON.stringify( postScanList )
+      }
+    );
+
+    const result = await response.text();
+
+    console.log("GAS返答", result);
+
+
+    if( result === "OK"){
+
+      console.log("送信成功");
+
+      //成功したら削除
+      postScanList = [];
+
+    } else {
+
+      console.log("GASエラー");
+
+      //配列は残す
+
+    }
+
+  }catch( error ){
+    console.log("通信エラー", error );
+    //配列は残す
+  } finally {
+    sendingFLG = false;
+  }
+
+  //sendingFLG = false;
+
+}
+
+/////////////////////////////////////////////////////////////
+//  バーコードを読める状態に戻す処理
+/////////////////////////////////////////////////////////////
+function resetBarcodeScan(){
+
+  scanLocked = false; //  読み取り許可を戻す
+  cooldown = false; //　次の処理をするまでの時間FLG
+  noReadCount = 0;  //  消失判定カウンターを戻す
+  hitCount = 0; //  前のバーコードのカウントをクリア
+  lastBarcode = ""; //  前の商品との比較をリセット
+  cameraProcessing = false;
+
 }
 
 
